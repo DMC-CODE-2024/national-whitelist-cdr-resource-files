@@ -1,16 +1,16 @@
 #!/bin/bash
 . ~/.bash_profile
 
-source ${commonConfigurationFile} >>/dev/null
+source ${commonConfigurationFile} 2>/dev/null
 
-dbPassword=$(java -jar  $pass_dypt spring.datasource.password)
+dbPassword=$(java -jar  ${pass_dypt}/pass_dypt.jar spring.datasource.password)
 
 conn="mysql -h${dbIp} -P${dbPort} -u${dbUsername} -p${dbPassword} ${appdbName}"
 
 `${conn} <<EOFMYSQL
-INSERT IGNORE INTO cfg_feature_alert (alert_id,DESCRIPTION,feature) VALUES('aler1209','DB connection failed while getting DB configuration value','national_whitelist');
-INSERT IGNORE INTO cfg_feature_alert (alert_id,DESCRIPTION,feature) VALUES('alert013','DB Issue <ERROR>','national_whitelist');
-INSERT IGNORE INTO cfg_feature_alert (alert_id,DESCRIPTION,feature) VALUES('alert016','Error in national_whitelist <ERROR>','national_whitelist');
+INSERT IGNORE INTO cfg_feature_alert (alert_id,DESCRIPTION,feature) VALUES('alert1209','DB connection failed while getting DB configuration value','national_whitelist');
+INSERT IGNORE INTO cfg_feature_alert (alert_id,DESCRIPTION,feature) VALUES('alert013','DB Issue <e>','national_whitelist');
+INSERT IGNORE INTO cfg_feature_alert (alert_id,DESCRIPTION,feature) VALUES('alert016','Error in national_whitelist <e>','national_whitelist');
 INSERT IGNORE INTO cfg_feature_alert (alert_id,DESCRIPTION,feature) VALUES('alert017',"In Post Amnesty period GDCE flag can't be off. Please check.",'national_whitelist');
 
 INSERT IGNORE INTO feature_rule(feature,grace_action,NAME,post_grace_action,rule_order,user_type,failed_rule_action_grace,failed_rule_action_post_grace,output,rule_message,modified_by) VALUES('national_whitelist','','CUSTOM_GDCE','',2,'default','','','','Rule message for CUSTOM_GDCE','system');
