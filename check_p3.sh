@@ -1,7 +1,6 @@
 #!/bin/bash
 
-set -x
-source $commonConfigurationFilePath
+source ${commonConfigurationFile}
 
 main_module="etl_cdr"
 module_name="etl_module"
@@ -9,8 +8,7 @@ process_name="sql"
 
 divisor=500000 
 
-dbDecryptPassword=$(java -jar $pass_dypt spring.datasource.password)
-echo "Password is " ${dbDecryptPassword}
+dbPassword=$(java -jar ${pass_dypt} spring.datasource.password)
 
 TODAY=$(date +"%Y-%m-%d")
 

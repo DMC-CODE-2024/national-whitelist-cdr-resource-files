@@ -1,60 +1,63 @@
 #!/bin/bash
 
 module_name="national_whitelist_cdr"
-main_module="national_whitelist" #keep it empty "" if there is no main module 
+main_module="national_whitelist" #keep it empty "" if there is no main module
 log_level="INFO" # INFO, DEBUG, ERROR
 
 ########### DO NOT CHANGE ANY CODE OR TEXT AFTER THIS LINE #########
 
-
 . ~/.bash_profile
+
+# Path to the check_p3.sh script
+check_p3_script_path="check_p3.sh"
+
+# Run the check_p3.sh script
+p3_status=$(bash "$check_p3_script_path")
+
+if [[ "$p3_status" != *"Completed"* ]]; then
+  echo "P3 process is still running. Exiting..."
+  exit 1
+fi
 
 build="${module_name}.jar"
 
-pid=`ps -ef | grep $build | grep java | grep $module_name | grep -v grep | awk '{print $2}'`
+pid=$(ps -ef | grep "$build" | grep java | grep "$module_name" | grep -v grep | awk '{print $2}')
 
-if [ "${pid}" != "" ]  ## Process is currently running
-then
+if [ "${pid}" != "" ]; then  ## Process is currently running
   echo "${module_name} process is currently running with PID ${pid} ..."
-
 else  ## No process running
-
-  if [ "${main_module}" == "" ]
-  then
-     build_path="${APP_HOME}/${module_name}_module"
-     log_path="${LOG_HOME}/${module_name}_module"
+  if [ "${main_module}" == "" ]; then
+    build_path="${APP_HOME}/${module_name}_module"
+    log_path="${LOG_HOME}/${module_name}_module"
   else
-     if [ "${main_module}" == "utility" ] || [ "${main_module}" == "api_service" ] || [ "${main_module}" == "gui" ]
-     then
-       build_path="${APP_HOME}/${main_module}/${module_name}"
-       log_path="${LOG_HOME}/${main_module}/${module_name}"
-     else
-       build_path="${APP_HOME}/${main_module}_module/${module_name}"
-       log_path="${LOG_HOME}/${main_module}_module/${module_name}"
-     fi
+    if [ "${main_module}" == "utility" ] || [ "${main_module}" == "api_service" ] || [ "${main_module}" == "gui" ]; then
+      build_path="${APP_HOME}/${main_module}/${module_name}"
+      log_path="${LOG_HOME}/${main_module}/${module_name}"
+    else
+      build_path="${APP_HOME}/${main_module}_module/${module_name}"
+      log_path="${LOG_HOME}/${main_module}_module/${module_name}"
+    fi
   fi
 
-  cd ${build_path}
+  cd "${build_path}"
 
   ## Starting the process
 
   echo "Starting ${module_name} process..."
 
- java -Dlog4j.configurationFile=./log4j2.xml -Dlog.level=${log_level} -Dlog.path=${log_path} -Dmodule.name=${module_name} -Dspring.config.location=file:./application.properties,file:${commonConfigurationFile} -jar ${build} 1>/dev/null 2>${log_path}/${module_name}.error &
+  java -Dlog4j.configurationFile=./log4j2.xml \
+       -Dlog.level=${log_level} \
+       -Dlog.path=${log_path} \
+       -Dmodule.name=${module_name} \
+       -Dspring.config.location=file:./application.properties,file:${commonConfigurationFile} \
+       -jar ${build} 1>/dev/null 2>"${log_path}/${module_name}.error" &
 
-  ## check if process started successfully or not
-
-  pid=`ps -ef | grep $build | grep java | grep $module_name | grep -v grep | awk '{print $2}'`
-  if [ "$pid" == "" ]
-  then
-
+  ## Check if the process started successfully or not
+  pid=$(ps -ef | grep "$build" | grep java | grep "$module_name" | grep -v grep | awk '{print $2}')
+  if [ "$pid" == "" ]; then
     echo "Failed to start $module_name process !!!"
-
   else
-    
     echo "$module_name process is started successfully with PID ${pid} ..."
-
   fi
-
 fi
 
